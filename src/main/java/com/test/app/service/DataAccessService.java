@@ -93,4 +93,14 @@ public class DataAccessService {
         noteRepo.save(note);
         return noteRepo.findNotesByAuthor(thought.getInterpreter());
     }
+
+    public List<Account> getSuggestedBuddies(String email) {
+        //temporary
+        List<Account> all = accRepo.findAll();
+        all.removeIf(a->a.getEmail().equals(email));
+        return all;
+        /*
+        In future, checking common address and common buddies of buddies have to be returned
+         */
+    }
 }

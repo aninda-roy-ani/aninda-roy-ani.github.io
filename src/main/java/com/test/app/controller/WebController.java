@@ -6,6 +6,7 @@ import com.test.app.model.Account;
 import com.test.app.payload.AUTHOR_NOTES_VIEW;
 import com.test.app.payload.InputModel;
 import com.test.app.payload.NOTE_VIEW;
+import com.test.app.service.DataAccessService;
 import com.test.app.service.MainService;
 import com.test.app.service.WebClientService;
 import org.json.JSONObject;
@@ -35,6 +36,7 @@ public class WebController {
     @Value("${updateNote}") private String updateNote;
 
     @Autowired private MainService service;
+    @Autowired private DataAccessService database;
 
     @GetMapping({"/","/index","/login"})
     public String front(){
@@ -44,12 +46,12 @@ public class WebController {
     @PostMapping("/login")
     public String login(ModelMap model, InputModel inputModel,
                         HttpServletRequest request){
-        ObjectMapper objectMapper = new ObjectMapper();
         JSONObject loginMap = new JSONObject();
         loginMap.put("email",inputModel.getEmail());
         loginMap.put("password",inputModel.getPassword());
         ResponseEntity<Account> res = WebClientService.PostHTTPForAccount(baseURL+readAccount,loginMap);
         if (res.hasBody() && res.getStatusCodeValue() == 200){
+            model.addAttribute("lob",database.getSuggestedBuddies(inputModel.getEmail()));
             Account account = res.getBody();
             account.setBirthday(service.getBirthday(account.getBirthday()));
             model.addAttribute("acc", account);
@@ -66,18 +68,12 @@ public class WebController {
     @PostMapping("/updateNote")
     public String scoring(@RequestParam("thoughtText") String thoughtText,
             InputModel inputModel, ModelMap model, HttpServletRequest request){
-        String email = request.getParameter("email");
-        String password = request.getParameter("password");
-        String thot = request.getParameter("thoughtText");
-        System.out.println("----------------------");
-        System.out.println(thot);
-        System.out.println(thoughtText);
-        System.out.println("----------------------");
         JSONObject loginMap = new JSONObject();
         loginMap.put("email",inputModel.getEmail());
         loginMap.put("password",inputModel.getPassword());
         ResponseEntity<Account> res = WebClientService.PostHTTPForAccount(baseURL+readAccount,loginMap);
         if (res.hasBody() && res.getStatusCodeValue() == 200){
+            model.addAttribute("lob",database.getSuggestedBuddies(inputModel.getEmail()));
             Account account = res.getBody();
             account.setBirthday(service.getBirthday(account.getBirthday()));
             model.addAttribute("acc", account);
@@ -94,8 +90,5 @@ public class WebController {
         }
         return login(model,inputModel,request);
     }
-
-
-
 
 }
